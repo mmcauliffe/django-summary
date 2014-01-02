@@ -27,7 +27,8 @@ class Summary(object):
 
     def __init__(self,summary,title,date_resolution):
         self.date_resolution = date_resolution
-        self.title = title.replace(" ",'').replace('(','').replace(')','')
+        self.title = title
+        self.id = title.replace(" ",'').replace('(','').replace(')','')
         if isinstance(summary.itervalues().next(),OrderedDict):
             self.dimensions = [0,0]
         data = OrderedDict()
@@ -50,21 +51,41 @@ class Summary(object):
                         data[(o,t)] = Decimal('0.00')
         self.data = data
 
+    def data_to_table(self):
+        if len(self.dimensions) == 1:
+            head = [self.title,'Total']
+            body = []
+            for k,v in self.data.items():
+                body.append([render_value(k,self.date_resolution),'{:,}'.format(v)])
+        else:
+            head = self.dimensions[0]
+            body = []
+            for x in self.dimensions[1]:
+                row = [render_value(x,self.date_resolution)]
+                row += ['{:,}'.format(self.data[(y,x)]) for y in self.dimensions[0]]
+                body.append(row)
+
+        return head,body
+
+    def as_csv(self):
+        head,body = self.data_to_table()
+        rows = [head] + body
+        return rows
+
     def as_table(self):
         table = '<div id="%(id)s"><table class="summary"><thead>%(head)s</thead><tbody>%(body)s</tbody></table></div>'
         row = '<tr>%s</tr>'
-        if len(self.dimensions) == 1:
-            head = row % ''.join([ '<th>%s</th>' % x for x in ['','Total']])
-            body = ''.join([row % '<th>%s</th><td>%s</td>' % (render_value(k,self.date_resolution),'{:,}'.format(v)) for k,v in self.data.items()])
-        else:
-            head = row % ''.join([ '<th>%s</th>' % x for x in self.dimensions[0]])
-            body = []
-            for x in self.dimensions[1]:
-                rowhead = '<th>%s</th>' % render_value(x,self.date_resolution)
-                rowbody = ''.join(['<td>%s</td>' % '{:,}'.format(self.data[(y,x)]) for y in self.dimensions[0]])
-                body.append(row % (rowhead+rowbody))
-            body = ''.join(body)
-        return mark_safe(table % {'head':head,'body':body,'id':self.title})
+        head_cell = '<th>%s</th>'
+        body_cell = '<td>%s</td>'
+        headdata,bodydata = self.data_to_table()
+        body_temp = ''.join([head_cell]+[body_cell]*(len(headdata)-1))
+
+        head = row % ''.join([ head_cell % x for x in headdata])
+        body = []
+        for r in bodydata:
+            body.append(row % (body_temp % r))
+        body = ''.join(body)
+        return mark_safe(table % {'head':head,'body':body,'id':self.id})
 
     def as_chart(self):
         options = {

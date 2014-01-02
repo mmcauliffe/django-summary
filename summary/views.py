@@ -1,6 +1,10 @@
 # Create your views here.
 from decimal import Decimal
 from collections import OrderedDict
+import csv
+from datetime import date
+
+from django.http import HttpResponse
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
@@ -8,7 +12,8 @@ from django.core.exceptions import ImproperlyConfigured
 #from chartit import PivotDataPool, PivotChart, DataPool, Chart
 from django.utils.safestring import mark_safe
 from django.db import connections
-from datetime import date
+
+
 from summary.classes import Summary
 from summary.helper import get_all_related_objects, get_related_class, find_nearby_field, find_fields_by_type
 
@@ -114,6 +119,19 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
 
         summary = self.get_summary(qs)
         context = self.get_context_data(summary=summary,filters = self.filters)
+        csv_check = request.GET.get('csv',0)
+        key = request.GET.get('key',None)
+        if csv_check and key is not None:
+            try:
+                summary = summary[key]
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename="%s.csv"' % key
+                writer = csv.writer(response, delimiter='\t',quotechar = '')
+                for line in summary.as_csv():
+                    writer.writerow(line)
+                return response
+            except KeyError:
+                pass
         return self.render_to_response(context)
 
     def get_summary(self,querysets):
