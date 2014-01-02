@@ -130,7 +130,7 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
             if key_sum is not None:
                 response = HttpResponse(content_type='text/csv')
                 response['Content-Disposition'] = 'attachment; filename="%s.csv"' % key
-                writer = csv.writer(response, delimiter='\t',quotechar = '')
+                writer = csv.writer(response, delimiter='\t',quoting=csv.QUOTE_MINIMAL)
                 for line in key_sum.as_csv():
                     writer.writerow(line)
                 return response
