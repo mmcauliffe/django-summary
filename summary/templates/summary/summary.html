@@ -19,9 +19,9 @@ $(document).ready(function() {
 {% block main %}
 {% spaceless %}
 {% for s in sum_info %}
-<div id="{{ s.id }}">
 	<h6>{{s.title}}</h6>
 	<a href='{% append_to_get csv=1,key=s.id %}'>Download data</a>
+<div id="{{ s.id }}">
 	{{s.as_table}}
 </div>
 {% endfor %}
