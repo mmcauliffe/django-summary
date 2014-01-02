@@ -1,5 +1,10 @@
 from setuptools import setup, find_packages
 
+template_patterns = [
+    'templates/*.html',
+    'templates/*/*.html',
+    'templates/*/*/*.html',
+    ]
 
 setup(
     name='django-summary',
@@ -12,6 +17,8 @@ setup(
     url='https://github.com/mmcauliffe/django-summary',
     license='BSD',
     packages=find_packages(),
+    package_data=dict( (package_name, template_patterns)
+                   for package_name in packages ),
     zip_safe=False,
     install_requires=['Django',],
     include_package_data=True,
