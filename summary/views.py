@@ -160,7 +160,7 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
                 for q in querysets:
                     opts = q.model._meta
                     g = None
-                    if by in [f.name for f in opts._fields()]:
+                    if by in [f.name for f in opts.fields]:
                         g = opts.get_field(by)
                     if g is None and by not in q.query.extra.keys():
                         continue
