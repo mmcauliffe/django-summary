@@ -73,7 +73,7 @@ class Summary(object):
         return rows
 
     def as_table(self):
-        table = '<div id="%(id)s"><table class="summary"><thead>%(head)s</thead><tbody>%(body)s</tbody></table></div>'
+        table = '<table class="summary"><thead>%(head)s</thead><tbody>%(body)s</tbody></table>'
         row = '<tr>%s</tr>'
         head_cell = '<th>%s</th>'
         body_cell = '<td>%s</td>'
@@ -85,7 +85,7 @@ class Summary(object):
         for r in bodydata:
             body.append(row % (body_temp % r))
         body = ''.join(body)
-        return mark_safe(table % {'head':head,'body':body,'id':self.id})
+        return mark_safe(table % {'head':head,'body':body})
 
     def as_chart(self):
         options = {
