@@ -1,0 +1,33 @@
+{% extends "index.html" %}
+{% load humanize portal_extras %}
+{% block title %}Summary{% endblock %}
+
+{% if charts %}
+{% block extra_js %}
+{% if 'display' in request.GET and request.GET.display == 'C' %}<script src="http://code.highcharts.com/highcharts.js"></script>
+<script>
+$(document).ready(function() {
+{% for s in sum_info %}
+{{s.as_chart}}
+{% endfor %}
+});
+</script>
+{% endif %}
+{% endblock %}
+{% endif %}
+
+{% block main %}
+{% spaceless %}
+{% for s in sum_info %}
+	<h6>{{s.title}}</h6>
+	{{s.as_table}}
+{% endfor %}
+ {% endspaceless %}
+{% endblock %}
+
+{% block right_panel %}
+{% for f in filters %}
+{% include f.template_name %}
+{% endfor %}
+{% endblock %}
+
