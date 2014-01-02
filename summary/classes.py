@@ -58,7 +58,7 @@ class Summary(object):
             for k,v in self.data.items():
                 body.append([render_value(k,self.date_resolution),'{:,}'.format(v)])
         else:
-            head = self.dimensions[0]
+            head = ['Date'] + self.dimensions[0]
             body = []
             for x in self.dimensions[1]:
                 row = [render_value(x,self.date_resolution)]
