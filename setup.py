@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 
+packages = find_packages()
 template_patterns = [
     'templates/*.html',
     'templates/*/*.html',
@@ -16,7 +17,7 @@ setup(
     author_email='michael.e.mcauliffe@gmail.com',
     url='https://github.com/mmcauliffe/django-summary',
     license='BSD',
-    packages=find_packages(),
+    packages=packages,
     package_data=dict( (package_name, template_patterns)
                    for package_name in packages ),
     zip_safe=False,
