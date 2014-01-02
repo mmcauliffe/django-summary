@@ -122,7 +122,12 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
         csv_check = request.GET.get('csv',0)
         key = request.GET.get('key',None)
         if csv_check and key is not None:
-            try:
+            key_sum = None
+            for s in summary:
+                if key == s.id:
+                    key_sum = s
+                    break
+            if key_sum is not None:
                 summary = summary[key]
                 response = HttpResponse(content_type='text/csv')
                 response['Content-Disposition'] = 'attachment; filename="%s.csv"' % key
@@ -130,8 +135,6 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
                 for line in summary.as_csv():
                     writer.writerow(line)
                 return response
-            except KeyError:
-                pass
         return self.render_to_response(context)
 
     def get_summary(self,querysets):
