@@ -83,7 +83,8 @@ class Summary(object):
         head = row % ''.join([ head_cell % x for x in headdata])
         body = []
         for r in bodydata:
-            body.append(row % (body_temp % r))
+            body_row = body_temp % tuple(r)
+            body.append(row % (body_row))
         body = ''.join(body)
         return mark_safe(table % {'head':head,'body':body})
 
