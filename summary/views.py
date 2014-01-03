@@ -214,6 +214,11 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
                     for r in relevant:
                         #key = r.field.verbose_name
                         g = r.field.name
+                        main = by._meta.ordering[-1]
+                        if main is None:
+                            gn = '%s__%s'%(g,g)
+                        else:
+                            gn = '%s__%s'%(g,main)
                         f = find_nearby_field(q.model,field)
                         if f is None: #Is not relevant field for this queryset
                             continue
@@ -221,22 +226,22 @@ class BaseSummaryView(MultipleQuerysetMixin, View):
                             date_fields = find_fields_by_type(q.model, models.fields.DateField)
                             qs = q.extra(select={
                                 self.date_resolution: connections[q.model.objects.db].ops.date_trunc_sql(self.date_resolution,'"'+date_fields[0].name+'"')})
-                            qs = qs.order_by(g,self.date_resolution).values(g,self.date_resolution).annotate(Agg = function(f))
+                            qs = qs.order_by(g,self.date_resolution).values(gn,self.date_resolution).annotate(Agg = function(f))
                             #p
                             for x in qs:
-                                if x[g] is not None:
-                                    t = str(by.objects.get(pk=x[g]))
+                                if x[gn] is not None:
+                                    t = x[gn]
                                     if t not in summary:
                                         summary[t] = OrderedDict()
                                     summary[t][x[self.date_resolution]] = x['Agg']
 
                         else:
-                            qs = qs.order_by(g,self.date_resolution).values(g,self.date_resolution).annotate(Agg = function(f))
+                            qs = q.order_by(g).values(gn).annotate(Agg = function(f))
                             #p
                             for x in qs:
 
-                                if x[g] is not None:
-                                    summary[str(by.objects.get(pk=x[g]))] = x['Agg']
+                                if x[gn] is not None:
+                                    summary[x[gn]] = x['Agg']
             if summary:
                 summary = Summary(summary,key,self.date_resolution)
                 summaries.append(summary)
