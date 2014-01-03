@@ -29,54 +29,70 @@ class Summary(object):
         self.date_resolution = date_resolution
         self.title = title
         self.id = title.replace(" ",'').replace('(','').replace(')','')
-        if isinstance(summary.itervalues().next(),OrderedDict):
+        if isinstance(summary.itervalues().next(),dict):
             self.dimensions = [0,0]
-        data = OrderedDict()
+        self.data = summary
+
+    def data_to_matrix(self):
+        matrix = OrderedDict()
         for k,v in summary.items():
             if len(self.dimensions) == 1:
-                data[k] = v
+                matrix[k] = v
             else:
                 for k2,v2 in v.items():
-                    data[(k,k2)] = v2
+                    matrix[(k,k2)] = v2
         if len(self.dimensions) == 2:
             kones = set([])
             ktwos = set([])
-            for x in data:
+            for x in matrix:
                 kones.update([x[0]])
                 ktwos.update([x[1]])
             self.dimensions = [sorted(kones),sorted(ktwos)]
             for o in kones:
                 for t in ktwos:
-                    if (o,t) not in data:
-                        data[(o,t)] = Decimal('0.00')
-        self.data = data
+                    if (o,t) not in matrix:
+                        matrix[(o,t)] = Decimal('0.00')
+        return matrix
 
-    def data_to_table(self):
+    def data_to_table(self,pretty=True):
         if len(self.dimensions) == 1:
             head = [self.title,'Total']
             body = []
             for k,v in self.data.items():
                 body.append([render_value(k,self.date_resolution),'{:,}'.format(v)])
         else:
-            head = ['Date'] + self.dimensions[0]
+            head = [self.title,'Date','Total']
             body = []
-            for x in self.dimensions[1]:
-                row = [render_value(x,self.date_resolution)]
-                row += ['{:,}'.format(self.data[(y,x)]) for y in self.dimensions[0]]
-                body.append(row)
-
+            for k, v in self.data.items():
+                print(k,v)
+                added_k = False
+                for k2,v2 in v.items():
+                    row = []
+                    if added_k and pretty:
+                        row.append('')
+                    else:
+                        row.append(k)
+                        if pretty:
+                            added_k = True
+                    row.append(render_value(k2,self.date_resolution))
+                    row.append('{:,}'.format(v2))
+                    body.append(row)
         return head,body
 
+    def data_to_csv(self):
+        return self.data_to_table(pretty=False)
+
+
     def as_csv(self):
-        head,body = self.data_to_table()
+        head,body = self.data_to_csv()
         rows = [head] + body
         return rows
 
     def as_table(self):
-        table = '<table class="summary"><thead>%(head)s</thead><tbody>%(body)s</tbody></table>'
+        table = '<table class="summary" width="100%%" align="left"><thead>%(head)s</thead><tbody>%(body)s</tbody></table>'
         row = '<tr>%s</tr>'
-        head_cell = '<th>%s</th>'
-        body_cell = '<td>%s</td>'
+        head_cell = '<th align="left">%s</th>'
+        body_cell = '<td align="left">%s</td>'
         headdata,bodydata = self.data_to_table()
         body_temp = ''.join([head_cell]+[body_cell]*(len(headdata)-1))
 
